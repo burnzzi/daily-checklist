@@ -167,7 +167,19 @@ with tab3:
         st.write("### Current Watchlist")
         st.write(", ".join(st.session_state.watchlist))
 
-    # Watchlist rotation mechanism
+        # Fetch live prices for all tickers in the watchlist
+        st.write("### Live Prices for Watchlist Tickers")
+        for ticker in st.session_state.watchlist:
+            try:
+                ticker_data = yf.Ticker(ticker)
+                ticker_price = ticker_data.history(period="1d")["Close"].iloc[-1]
+                st.metric(f"{ticker} Price", f"${ticker_price:.2f}" if not isnan(ticker_price) else "N/A")
+            except Exception as e:
+                st.error(f"Error fetching data for {ticker}: {e}")
+    else:
+        st.info("No tickers in watchlist yet. Add some tickers above!")
+
+    # Watchlist rotation mechanism (same logic)
     if st.session_state.watchlist:
         st.write("### Rotational Mechanism")
         rotation_count = len(st.session_state.watchlist)
@@ -177,9 +189,9 @@ with tab3:
         st.write(f"🔄 Today's Rotated Ticker: {current_ticker}")
         
         # Get the live price of the current ticker
-        current_ticker_data = yf.Ticker(current_ticker)
-        current_ticker_price = current_ticker_data.history(period="1d")["Close"].iloc[-1]
-
-        st.metric(f"{current_ticker} Price", f"${current_ticker_price:.2f}" if not isnan(current_ticker_price) else "N/A")
-    else:
-        st.info("No tickers in watchlist yet. Add some tickers above!")
+        try:
+            current_ticker_data = yf.Ticker(current_ticker)
+            current_ticker_price = current_ticker_data.history(period="1d")["Close"].iloc[-1]
+            st.metric(f"{current_ticker} Price", f"${current_ticker_price:.2f}" if not isnan(current_ticker_price) else "N/A")
+        except Exception as e:
+            st.error(f"Error fetching live data for {current_ticker}: {e}")
