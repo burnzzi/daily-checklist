@@ -36,26 +36,51 @@ with tab1:
     col3.metric("VIX", f"{vix_price}" if not isnan(vix_price) else "N/A")
     col4.metric("Nasdaq Futures", f"${nasdaq_futures_price}" if not isnan(nasdaq_futures_price) else "N/A")
     
-    # Checklist form
-    st.subheader("📋 Daily Checklist")
-    checklist_items = [
-        "Check if market open",
-        "Review previous day performance",
-        "Set entry/exit price range",
-        "Review support/resistance",
-        "Check for market news",
-        "Evaluate sentiment indicators (e.g., VIX)",
-        "Update stop-loss orders",
-        "Check major economic events"
+    # --- CHECKLIST SECTION ---
+st.markdown("## ✅ Daily Checklist")
+
+checklist = {
+    "Pre-Market (8:00am – 9:20am)": [
+        "Check NQ Futures trend",
+        "Review VIX movement",
+        "Scan TQQQ/SQQQ pre-market volume",
+        "Identify key economic data releases today",
+        "Update market breadth indicators",
+        "Determine initial directional bias",
+        "Note any relevant news headlines"
+    ],
+    "Opening Session (9:30am – 10:30am)": [
+        "Observe opening 5-min candle direction",
+        "Watch for early momentum shifts",
+        "Track volume confirmation",
+        "Set alerts near overnight highs/lows",
+        "Confirm price action aligns with bias"
+    ],
+    "Mid-Day Review (12:00pm – 1:30pm)": [
+        "Reassess market breadth and volume trends",
+        "Adjust levels or directional bias if needed",
+        "Watch for reversal signs / trend continuation",
+        "Manage open trades or set alerts for re-entry"
+    ],
+    "Late Session (2:30pm – 3:50pm)": [
+        "Observe end-of-day directional momentum",
+        "Trim or close positions based on risk/reward",
+        "Watch for volume spikes",
+        "Consider hedging if exposure is high into close"
+    ],
+    "Post-Market Review (4:00pm – 5:00pm)": [
+        "Review how trades aligned with setup",
+        "Journal key learnings from today",
+        "Update trade log",
+        "Identify areas for improvement"
     ]
-    
-    # Checkboxes for each item in checklist
-    checklist_status = {item: st.checkbox(item) for item in checklist_items}
-    
-    # Display status of checklist items
-    st.write("### Checklist Status")
-    for item, checked in checklist_status.items():
-        st.write(f"- {item}: {'✅' if checked else '❌'}")
+}
+
+# Display checklist
+for session, tasks in checklist.items():
+    st.markdown(f"### 🕒 {session}")
+    for task in tasks:
+        st.checkbox(task, key=f"{session}-{task}")
 
 # --- Tab 2: Trade Log ---
 with tab2:
