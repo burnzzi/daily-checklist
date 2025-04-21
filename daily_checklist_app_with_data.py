@@ -1,5 +1,7 @@
 import streamlit as st
 import yfinance as yf
+import finnhub
+import os
 from datetime import datetime
 
 st.set_page_config(page_title="TQQQ/SQQQ Dashboard", layout="wide")
@@ -11,26 +13,32 @@ st.subheader(f"Date: {datetime.now().strftime('%A, %B %d, %Y')}")
 # --- LIVE DATA SECTION ---
 st.markdown("## 🔴 Live Data Snapshot")
 
-# Function to fetch live data for TQQQ, SQQQ, VIX, and NQ Futures
+# Setup Finnhub client using your Streamlit Secrets
+finnhub_client = finnhub.Client(api_key=os.getenv("FINNHUB_API_KEY"))
+
+# Function to get VIX and NQ from Finnhub
+def get_vix_nq_from_finnhub():
+    try:
+        vix_quote = finnhub_client.quote("^VIX")
+        nq_quote = finnhub_client.quote("NQ=F")
+
+        vix_price = vix_quote["c"] if "c" in vix_quote else float("nan")
+        nq_price = nq_quote["c"] if "c" in nq_quote else float("nan")
+    except Exception as e:
+        vix_price = nq_price = float("nan")
+
+    return vix_price, nq_price
+
+# Function to get live data for TQQQ and SQQQ from yfinance
 def get_live_data():
-    # Use 1-min interval for TQQQ and SQQQ (live)
     tqqq_live = yf.download("TQQQ", period="1d", interval="1m")
     sqqq_live = yf.download("SQQQ", period="1d", interval="1m")
-    
-    # Use fallback method for VIX and NQ futures (as real-time often returns NaN)
-    vix = yf.Ticker("^VIX")
-    nq = yf.Ticker("NQ=F")
-    
-    # Get the most recent data points
+
     tqqq_price = tqqq_live["Close"].dropna().iloc[-1] if not tqqq_live.empty else float("nan")
     sqqq_price = sqqq_live["Close"].dropna().iloc[-1] if not sqqq_live.empty else float("nan")
-    
-    vix_history = vix.history(period="1d")
-    nq_history = nq.history(period="1d")
-    
-    vix_price = vix_history["Close"].dropna().iloc[-1] if not vix_history.empty else float("nan")
-    nq_price = nq_history["Close"].dropna().iloc[-1] if not nq_history.empty else float("nan")
-    
+
+    vix_price, nq_price = get_vix_nq_from_finnhub()
+
     return tqqq_price, sqqq_price, vix_price, nq_price
 
 # Get the live data
