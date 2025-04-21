@@ -13,31 +13,23 @@ st.markdown("## 🔴 Live Data Snapshot")
 
 # Function to fetch live data for TQQQ, SQQQ, VIX, and NQ Futures
 def get_live_data():
-    # Symbols for TQQQ, SQQQ, VIX, and Nasdaq Futures
-    tickers = ['TQQQ', 'SQQQ', '^VIX', 'NQ=F']
+    # Use 1-min interval for TQQQ and SQQQ (live)
+    tqqq_live = yf.download("TQQQ", period="1d", interval="1m")
+    sqqq_live = yf.download("SQQQ", period="1d", interval="1m")
     
-    data = yf.download(tickers, period='1d', interval='1m', group_by='ticker')
+    # Use fallback method for VIX and NQ futures (as real-time often returns NaN)
+    vix = yf.Ticker("^VIX")
+    nq = yf.Ticker("NQ=F")
     
-    # Extracting the most recent close price and change (if valid)
-    try:
-        tqqq_price = data['TQQQ']['Close'][-1]
-    except KeyError:
-        tqqq_price = "Data unavailable"
-        
-    try:
-        sqqq_price = data['SQQQ']['Close'][-1]
-    except KeyError:
-        sqqq_price = "Data unavailable"
-        
-    try:
-        vix_price = data['^VIX']['Close'][-1]
-    except KeyError:
-        vix_price = "Data unavailable"
-        
-    try:
-        nq_price = data['NQ=F']['Close'][-1]
-    except KeyError:
-        nq_price = "Data unavailable"
+    # Get the most recent data points
+    tqqq_price = tqqq_live["Close"].dropna().iloc[-1] if not tqqq_live.empty else float("nan")
+    sqqq_price = sqqq_live["Close"].dropna().iloc[-1] if not sqqq_live.empty else float("nan")
+    
+    vix_history = vix.history(period="1d")
+    nq_history = nq.history(period="1d")
+    
+    vix_price = vix_history["Close"].dropna().iloc[-1] if not vix_history.empty else float("nan")
+    nq_price = nq_history["Close"].dropna().iloc[-1] if not nq_history.empty else float("nan")
     
     return tqqq_price, sqqq_price, vix_price, nq_price
 
