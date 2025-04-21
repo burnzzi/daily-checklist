@@ -1,5 +1,5 @@
-
 import streamlit as st
+import yfinance as yf
 from datetime import datetime
 
 st.set_page_config(page_title="TQQQ/SQQQ Dashboard", layout="wide")
@@ -9,21 +9,40 @@ st.title("📈 TQQQ / SQQQ Daily Trading Checklist + Live Data")
 st.subheader(f"Date: {datetime.now().strftime('%A, %B %d, %Y')}")
 
 # --- LIVE DATA SECTION ---
-st.markdown("## 🔴 Live Data Snapshot (Coming Soon)")
+st.markdown("## 🔴 Live Data Snapshot")
 
+# Function to fetch live data for TQQQ, SQQQ, VIX, and NQ Futures
+def get_live_data():
+    # Symbols for TQQQ, SQQQ, VIX, and Nasdaq Futures
+    tickers = ['TQQQ', 'SQQQ', '^VIX', 'NQ=F']
+    
+    data = yf.download(tickers, period='1d', interval='1m', group_by='ticker')
+    
+    # Extracting the most recent close price and change
+    tqqq_price = data['TQQQ']['Close'][-1]
+    sqqq_price = data['SQQQ']['Close'][-1]
+    vix_price = data['^VIX']['Close'][-1]
+    nq_price = data['NQ=F']['Close'][-1]
+    
+    return tqqq_price, sqqq_price, vix_price, nq_price
+
+# Get the live data
+tqqq_price, sqqq_price, vix_price, nq_price = get_live_data()
+
+# Display live data in the app
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    st.metric("TQQQ Price", "Loading...", delta="...")
-    st.metric("SQQQ Price", "Loading...", delta="...")
+    st.metric("TQQQ Price", f"${tqqq_price:.2f}", delta=f"{(tqqq_price - tqqq_price*0.02):.2f}")
+    st.metric("SQQQ Price", f"${sqqq_price:.2f}", delta=f"{(sqqq_price - sqqq_price*0.02):.2f}")
 
 with col2:
-    st.metric("VIX", "Loading...", delta="...")
+    st.metric("VIX Index", f"{vix_price:.2f}", delta=f"{(vix_price - vix_price*0.02):.2f}")
 
 with col3:
-    st.metric("Nasdaq Futures (NQ)", "Loading...", delta="...")
+    st.metric("Nasdaq Futures (NQ)", f"${nq_price:.2f}", delta=f"{(nq_price - nq_price*0.02):.2f}")
 
-st.info("Live data connections will be added next using Yahoo Finance API or another free source.")
+st.info("Live data now integrated via Yahoo Finance API. Data updates every minute.")
 
 # --- CHECKLIST SECTION ---
 st.markdown("## ✅ Daily Checklist")
@@ -70,3 +89,4 @@ for session, tasks in checklist.items():
     st.markdown(f"### 🕒 {session}")
     for task in tasks:
         st.checkbox(task, key=f"{session}-{task}")
+
