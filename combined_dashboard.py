@@ -9,7 +9,7 @@ st.set_page_config(page_title="📈 Options Trading Dashboard", layout="wide")
 st.title("📈 Trading Dashboard")
 
 # Tabs for navigation
-tab1, tab2 = st.tabs(["📝 Daily Checklist", "📘 Trade Log"])
+tab1, tab2, tab3 = st.tabs(["📝 Daily Checklist", "📘 Trade Log", "🔄 Rotational Watchlist"])
 
 # --- Tab 1: Daily Checklist ---
 with tab1:
@@ -144,3 +144,42 @@ with tab2:
         st.download_button("📥 Download Trade Log as CSV", csv, "trade_log.csv", "text/csv")
     else:
         st.info("No trades logged yet.")
+
+# --- Tab 3: Rotational Watchlist ---
+with tab3:
+    st.subheader("🔄 Rotational Watchlist Tool")
+    
+    # Initialize watchlist in session state
+    if "watchlist" not in st.session_state:
+        st.session_state.watchlist = []
+    
+    # Input for adding tickers to the watchlist
+    with st.form("watchlist_form"):
+        watchlist_ticker = st.text_input("Add Ticker to Watchlist", "")
+        add_button = st.form_submit_button("Add Ticker")
+        
+        if add_button and watchlist_ticker:
+            st.session_state.watchlist.append(watchlist_ticker)
+            st.success(f"Ticker {watchlist_ticker} added to the watchlist!")
+    
+    # Display the watchlist
+    if st.session_state.watchlist:
+        st.write("### Current Watchlist")
+        st.write(", ".join(st.session_state.watchlist))
+
+    # Watchlist rotation mechanism
+    if st.session_state.watchlist:
+        st.write("### Rotational Mechanism")
+        rotation_count = len(st.session_state.watchlist)
+        current_ticker_index = (datetime.now().day % rotation_count)  # Simple logic to rotate daily based on day of the month
+        current_ticker = st.session_state.watchlist[current_ticker_index]
+
+        st.write(f"🔄 Today's Rotated Ticker: {current_ticker}")
+        
+        # Get the live price of the current ticker
+        current_ticker_data = yf.Ticker(current_ticker)
+        current_ticker_price = current_ticker_data.history(period="1d")["Close"].iloc[-1]
+
+        st.metric(f"{current_ticker} Price", f"${current_ticker_price:.2f}" if not isnan(current_ticker_price) else "N/A")
+    else:
+        st.info("No tickers in watchlist yet. Add some tickers above!")
