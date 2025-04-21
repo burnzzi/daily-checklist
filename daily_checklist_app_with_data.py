@@ -1,6 +1,7 @@
 import streamlit as st
 import yfinance as yf
 import finnhub
+from math import isnan  # <-- Add this at the top
 
 # Load API key
 api_key = st.secrets.get("FINNHUB_API_KEY", None)
@@ -17,7 +18,7 @@ def get_vix_nq_finnhub():
         nq_data = finnhub_client.quote("NQ=F")
         vix_price = float(vix_data.get("c", float("nan")))
         nq_price = float(nq_data.get("c", float("nan")))
-    except Exception as e:
+    except Exception:
         vix_price, nq_price = float("nan"), float("nan")
     return vix_price, nq_price
 
@@ -37,14 +38,13 @@ def get_live_data():
 
 # UI
 st.set_page_config(page_title="TQQQ/SQQQ Daily Checklist", layout="wide")
-st.title("📊 TQQQ/SQQQ Daily Trading Checklist")
+st.title("📊 Daily Trading Checklist")
 
 # Fetch prices
 tqqq_price, sqqq_price, vix_price, nq_price = get_live_data()
 
-# Display metrics safely
+# Display metrics
 col1, col2, col3, col4 = st.columns(4)
-
 col1.metric("TQQQ", f"${tqqq_price:.2f}" if not isnan(tqqq_price) else "N/A")
 col2.metric("SQQQ", f"${sqqq_price:.2f}" if not isnan(sqqq_price) else "N/A")
 col3.metric("VIX", f"{vix_price:.2f}" if not isnan(vix_price) else "N/A")
@@ -66,6 +66,3 @@ checklist_items = [
 
 for item in checklist_items:
     st.checkbox(item)
-
-# Helper
-from math import isnan
