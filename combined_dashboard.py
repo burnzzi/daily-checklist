@@ -4,14 +4,14 @@ import pandas as pd
 from datetime import datetime
 from math import isnan
 
-# Title
+# Title and page config
 st.set_page_config(page_title="📈 Options Trading Dashboard", layout="wide")
 st.title("📈 Trading Dashboard")
 
 # Tabs for navigation
 tab1, tab2 = st.tabs(["📝 Daily Checklist", "📘 Trade Log"])
 
-# --- Tab 1: Daily Checklist
+# --- Tab 1: Daily Checklist ---
 with tab1:
     # Live data for TQQQ, SQQQ, VIX, and Nasdaq Futures
     try:
@@ -36,25 +36,28 @@ with tab1:
     col3.metric("VIX", f"{vix_price}" if not isnan(vix_price) else "N/A")
     col4.metric("Nasdaq Futures", f"${nasdaq_futures_price}" if not isnan(nasdaq_futures_price) else "N/A")
     
-    # Checklist form (like your earlier checklist logic)
+    # Checklist form
     st.subheader("📋 Daily Checklist")
     checklist_items = [
         "Check if market open",
         "Review previous day performance",
         "Set entry/exit price range",
         "Review support/resistance",
-        "Check for market news"
+        "Check for market news",
+        "Evaluate sentiment indicators (e.g., VIX)",
+        "Update stop-loss orders",
+        "Check major economic events"
     ]
     
     # Checkboxes for each item in checklist
     checklist_status = {item: st.checkbox(item) for item in checklist_items}
     
-    # Display status
+    # Display status of checklist items
     st.write("### Checklist Status")
     for item, checked in checklist_status.items():
         st.write(f"- {item}: {'✅' if checked else '❌'}")
 
-# --- Tab 2: Trade Log
+# --- Tab 2: Trade Log ---
 with tab2:
     # Initialize session state for trade log
     if "trades" not in st.session_state:
