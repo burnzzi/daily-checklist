@@ -18,11 +18,26 @@ def get_live_data():
     
     data = yf.download(tickers, period='1d', interval='1m', group_by='ticker')
     
-    # Extracting the most recent close price and change
-    tqqq_price = data['TQQQ']['Close'][-1]
-    sqqq_price = data['SQQQ']['Close'][-1]
-    vix_price = data['^VIX']['Close'][-1]
-    nq_price = data['NQ=F']['Close'][-1]
+    # Extracting the most recent close price and change (if valid)
+    try:
+        tqqq_price = data['TQQQ']['Close'][-1]
+    except KeyError:
+        tqqq_price = "Data unavailable"
+        
+    try:
+        sqqq_price = data['SQQQ']['Close'][-1]
+    except KeyError:
+        sqqq_price = "Data unavailable"
+        
+    try:
+        vix_price = data['^VIX']['Close'][-1]
+    except KeyError:
+        vix_price = "Data unavailable"
+        
+    try:
+        nq_price = data['NQ=F']['Close'][-1]
+    except KeyError:
+        nq_price = "Data unavailable"
     
     return tqqq_price, sqqq_price, vix_price, nq_price
 
@@ -33,14 +48,18 @@ tqqq_price, sqqq_price, vix_price, nq_price = get_live_data()
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    st.metric("TQQQ Price", f"${tqqq_price:.2f}", delta=f"{(tqqq_price - tqqq_price*0.02):.2f}")
-    st.metric("SQQQ Price", f"${sqqq_price:.2f}", delta=f"{(sqqq_price - sqqq_price*0.02):.2f}")
+    st.metric("TQQQ Price", f"${tqqq_price:.2f}" if isinstance(tqqq_price, float) else tqqq_price, 
+              delta=f"{(tqqq_price - tqqq_price*0.02):.2f}" if isinstance(tqqq_price, float) else "N/A")
+    st.metric("SQQQ Price", f"${sqqq_price:.2f}" if isinstance(sqqq_price, float) else sqqq_price, 
+              delta=f"{(sqqq_price - sqqq_price*0.02):.2f}" if isinstance(sqqq_price, float) else "N/A")
 
 with col2:
-    st.metric("VIX Index", f"{vix_price:.2f}", delta=f"{(vix_price - vix_price*0.02):.2f}")
+    st.metric("VIX Index", f"{vix_price:.2f}" if isinstance(vix_price, float) else vix_price, 
+              delta=f"{(vix_price - vix_price*0.02):.2f}" if isinstance(vix_price, float) else "N/A")
 
 with col3:
-    st.metric("Nasdaq Futures (NQ)", f"${nq_price:.2f}", delta=f"{(nq_price - nq_price*0.02):.2f}")
+    st.metric("Nasdaq Futures (NQ)", f"${nq_price:.2f}" if isinstance(nq_price, float) else nq_price, 
+              delta=f"{(nq_price - nq_price*0.02):.2f}" if isinstance(nq_price, float) else "N/A")
 
 st.info("Live data now integrated via Yahoo Finance API. Data updates every minute.")
 
@@ -89,4 +108,3 @@ for session, tasks in checklist.items():
     st.markdown(f"### 🕒 {session}")
     for task in tasks:
         st.checkbox(task, key=f"{session}-{task}")
-
